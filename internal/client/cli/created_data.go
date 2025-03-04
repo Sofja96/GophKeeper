@@ -81,7 +81,7 @@ func CreateDataCmd(client *grpcclient.Client) *cobra.Command {
 			dataID, err := client.CreateData(req)
 			if err != nil {
 				cmd.Println("Ошибка:", err)
-				return fmt.Errorf("ошибка: %v", err) // Возвращаем ошибку
+				return fmt.Errorf("ошибка: %v", err)
 			}
 
 			cmd.Printf("Данные успешно сохранены с ID: %d\n", dataID)

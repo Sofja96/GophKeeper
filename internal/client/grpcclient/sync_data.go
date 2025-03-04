@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/grpc/status"
 
 	"github.com/Sofja96/GophKeeper.git/internal/client/localstorage"
 	"github.com/Sofja96/GophKeeper.git/internal/models"
