@@ -3,7 +3,6 @@ package db
 import (
 	"context"
 	"database/sql"
-	_ "database/sql"
 	"fmt"
 	"regexp"
 	"testing"
@@ -14,12 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Sofja96/GophKeeper.git/internal/models"
-	dmock "github.com/Sofja96/GophKeeper.git/internal/server/storage/db/mocks"
 )
 
 type mocks struct {
-	db      *sqlx.DB
-	storage *dmock.MockAdapter
+	db *sqlx.DB
 }
 
 func TestCreateUser(t *testing.T) {
@@ -55,7 +52,8 @@ func TestCreateUser(t *testing.T) {
 				expectedQuery := `insert into users (
                    username, password) values ($1, $2) on conflict(username) do update set
                    password = EXCLUDED.password;`
-				mock.ExpectExec(regexp.QuoteMeta(expectedQuery)).WithArgs(args.user.Username, args.user.Password).
+				mock.ExpectExec(regexp.QuoteMeta(expectedQuery)).
+					WithArgs(args.user.Username, args.user.Password).
 					WillReturnResult(sqlmock.NewResult(1, 1))
 			},
 			expectedUser: &models.User{
@@ -77,7 +75,8 @@ func TestCreateUser(t *testing.T) {
 				expectedQuery := `insert into users (
                    username, password) values ($1, $2) on conflict(username) do update set
                    password = EXCLUDED.password;`
-				mock.ExpectExec(regexp.QuoteMeta(expectedQuery)).WithArgs(args.user.Username, args.user.Password).
+				mock.ExpectExec(regexp.QuoteMeta(expectedQuery)).
+					WithArgs(args.user.Username, args.user.Password).
 					WillReturnError(fmt.Errorf("failed to create user"))
 			},
 			expectedUser: nil,
@@ -290,6 +289,84 @@ func TestUserHashPassword(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.Equal(t, tt.expectedPass, returnedPass, "The returned pass does not match the expected pass")
+			}
+
+		})
+
+	}
+}
+
+func TestGetUserId(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("failed to open mock database: %v", err)
+	}
+	defer db.Close()
+
+	type (
+		args struct {
+			username string
+		}
+		mockBehavior func(m *mocks, args args)
+	)
+	tests := []struct {
+		name         string
+		args         args
+		mockBehavior mockBehavior
+		expectedId   int64
+		wantErr      bool
+		err          error
+	}{
+		{
+			name: "GetUserIDSuccess",
+			args: args{
+				username: "testuser",
+			},
+			mockBehavior: func(m *mocks, args args) {
+				expectedQuery := `SELECT id FROM users WHERE username = $1`
+				mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).
+					WithArgs(args.username).
+					WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
+			},
+			expectedId: 1,
+			wantErr:    false,
+			err:        nil,
+		},
+		{
+			name: "GetUserIDError",
+			args: args{
+				username: "unknownuser",
+			},
+			mockBehavior: func(m *mocks, args args) {
+				expectedQuery := `SELECT id FROM users WHERE username = $1`
+				mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).
+					WithArgs(args.username).
+					WillReturnError(fmt.Errorf("unable select id"))
+			},
+			expectedId: 0,
+			wantErr:    true,
+			err:        fmt.Errorf("unable select id"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := gomock.NewController(t)
+			defer c.Finish()
+
+			m := &mocks{}
+
+			m.db = sqlx.NewDb(db, "sqlmock")
+			pg := dbAdapter{conn: m.db}
+
+			tt.mockBehavior(m, tt.args)
+			returnedId, err := pg.GetUserID(context.Background(), tt.args.username)
+
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, tt.expectedId, returnedId, "The returned pass does not match the expected pass")
 			}
 
 		})

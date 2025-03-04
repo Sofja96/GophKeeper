@@ -9,6 +9,11 @@ import (
 	"github.com/Sofja96/GophKeeper.git/internal/server/utils"
 )
 
+// RegisterUser регистрирует нового пользователя.
+// Проверяет, существует ли уже пользователь с данным именем.
+// Если существует, возвращает ошибку ErrUserExists.
+// Хеширует пароль пользователя перед сохранением в базе данных.
+// Возвращает зарегистрированного пользователя или ошибку.
 func (s *service) RegisterUser(ctx context.Context, user *models.User) (*models.User, error) {
 	existingUser, err := s.dbAdapter.GetUserIDByName(ctx, user.Username)
 	if err != nil {
@@ -36,6 +41,11 @@ func (s *service) RegisterUser(ctx context.Context, user *models.User) (*models.
 	return newUser, nil
 }
 
+// LoginUser выполняет аутентификацию пользователя.
+// Проверяет, существует ли пользователь с данным именем.
+// Сравнивает введенный пароль с хешированным паролем в базе данных.
+// Если пароль верный, генерирует JWT токен для аутентифицированного пользователя.
+// Возвращает JWT токен в виде строки или ошибку.
 func (s *service) LoginUser(ctx context.Context, user *models.User) (string, error) {
 	existingUser, err := s.dbAdapter.GetUserIDByName(ctx, user.Username)
 	if err != nil {
@@ -62,4 +72,10 @@ func (s *service) LoginUser(ctx context.Context, user *models.User) (string, err
 
 	return bearer, nil
 
+}
+
+// GetUserIDByUsername возвращает ID пользователя по его имени.
+// Используется для получения уникального идентификатора пользователя из базы данных.
+func (s *service) GetUserIDByUsername(ctx context.Context, username string) (int64, error) {
+	return s.dbAdapter.GetUserID(ctx, username)
 }

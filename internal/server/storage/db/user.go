@@ -9,6 +9,10 @@ import (
 	"github.com/Sofja96/GophKeeper.git/internal/models"
 )
 
+// CreateUser создает нового пользователя в базе данных.
+//
+// Если пользователь с таким именем уже существует, его пароль будет обновлен.
+// Возвращает созданного пользователя или ошибку, если операция не удалась.
 func (db *dbAdapter) CreateUser(ctx context.Context, user *models.User) (*models.User, error) {
 	query := `insert into users (
                    username, password) values ($1, $2) on conflict(username) do update set
@@ -22,6 +26,10 @@ func (db *dbAdapter) CreateUser(ctx context.Context, user *models.User) (*models
 
 }
 
+// GetUserIDByName проверяет, существует ли пользователь с указанным именем.
+//
+// Возвращает true, если пользователь найден, и false, если не найден,
+// а также ошибку, если произошла ошибка при выполнении запроса.
 func (db *dbAdapter) GetUserIDByName(ctx context.Context, username string) (bool, error) {
 	var id string
 	query := `SELECT id FROM users WHERE username = $1`
@@ -38,6 +46,9 @@ func (db *dbAdapter) GetUserIDByName(ctx context.Context, username string) (bool
 	return true, nil
 }
 
+// GetUserHashPassword получает хеш пароля пользователя по его имени.
+//
+// Возвращает хеш пароля пользователя или ошибку, если он не найден.
 func (db *dbAdapter) GetUserHashPassword(ctx context.Context, username string) (string, error) {
 	var password string
 
@@ -53,4 +64,18 @@ func (db *dbAdapter) GetUserHashPassword(ctx context.Context, username string) (
 	}
 
 	return password, nil
+}
+
+// GetUserID возвращает ID пользователя по его имени.
+//
+// Возвращает ID пользователя или ошибку, если имя не найдено в базе данных.
+func (db *dbAdapter) GetUserID(ctx context.Context, username string) (int64, error) {
+	var id int64
+	row := db.conn.QueryRowContext(ctx, "SELECT id FROM users WHERE username = $1", username)
+	err := row.Scan(&id)
+	if err != nil {
+		return 0, fmt.Errorf("unable select id: %w", err)
+	}
+
+	return id, nil
 }

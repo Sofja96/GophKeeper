@@ -12,10 +12,11 @@ const (
 	envKeyServerPort      = "SERVER_PORT"
 	envKeyDbDsn           = "DB_DSN"
 	envKeyDbAutoMigration = "DB_AUTO_MIGRATION"
-	envKeyDbSource        = "DB_SOURCE" //todo возможно удалить
+	envKeyMinioEndpoint   = "MINIO_ENDPOINT"
 	envKeyMinioUser       = "MINIO_ROOT_USER"
 	envKeyMinioPassword   = "MINIO_ROOT_PASSWORD"
-	envKeyEncryptionKey   = "ENCRYPTION_KEY"
+	envMinioBucketName    = "MINIO_BUCKET_NAME"
+	envKeyMinioUseSsl     = "MINIO_USE_SSL"
 	envKeyPathCert        = "CERT_PATH"
 	envKeyPathKey         = "KEY_PATH"
 )
@@ -29,11 +30,15 @@ type Settings struct {
 	DbAutoMigration bool
 	MinioUser       string
 	MinioPassword   string
-	EncryptionKey   string
 	PathCert        string
 	PathKey         string
+	MinioEndpoint   string
+	MinioUseSsl     bool
+	MinioBucketName string
 }
 
+// GetSettings загружает настройки из .env файла и переменных окружения,
+// если они указаны, и возвращает структуру настроек.
 func GetSettings() (*Settings, error) {
 	setEnvFunc := []func() error{
 		setEnv(envKeyDebug, false),
@@ -41,12 +46,13 @@ func GetSettings() (*Settings, error) {
 		setEnv(envKeyServerPort, "8080"),
 		setEnv(envKeyDbDsn, ""),
 		setEnv(envKeyDbAutoMigration, true),
-		setEnv(envKeyDbSource, ""),
 		setEnv(envKeyMinioUser, ""),
 		setEnv(envKeyMinioPassword, ""),
-		setEnv(envKeyEncryptionKey, ""),
 		setEnv(envKeyPathCert, ""),
 		setEnv(envKeyPathKey, ""),
+		setEnv(envKeyMinioEndpoint, "0.0.0.0:9000"),
+		setEnv(envKeyMinioUseSsl, false),
+		setEnv(envMinioBucketName, ""),
 	}
 
 	for _, f := range setEnvFunc {
@@ -66,7 +72,6 @@ func GetSettings() (*Settings, error) {
 	settings, err := newSettings()
 
 	return settings, err
-
 }
 
 func newSettings() (*Settings, error) {
@@ -75,13 +80,14 @@ func newSettings() (*Settings, error) {
 		Host:            viper.GetString(envKeyServerHost),
 		Port:            viper.GetString(envKeyServerPort),
 		DbDsn:           viper.GetString(envKeyDbDsn),
-		DbSource:        viper.GetString(envKeyDbSource),
 		DbAutoMigration: viper.GetBool(envKeyDbAutoMigration),
 		MinioUser:       viper.GetString(envKeyMinioUser),
 		MinioPassword:   viper.GetString(envKeyMinioPassword),
-		EncryptionKey:   viper.GetString(envKeyEncryptionKey),
 		PathCert:        viper.GetString(envKeyPathCert),
 		PathKey:         viper.GetString(envKeyPathKey),
+		MinioEndpoint:   viper.GetString(envKeyMinioEndpoint),
+		MinioUseSsl:     viper.GetBool(envKeyMinioUseSsl),
+		MinioBucketName: viper.GetString(envMinioBucketName),
 	}, nil
 }
 

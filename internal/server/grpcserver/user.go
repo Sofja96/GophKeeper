@@ -13,9 +13,6 @@ import (
 	"github.com/Sofja96/GophKeeper.git/proto"
 )
 
-//todo покрыть тестами и вызывать в тесте аpp и сервис
-
-// authServiceServer реализует gRPC методы для AuthService.
 type gophKeeperServer struct {
 	proto.UnimplementedGophKeeperServer
 	server app.Server
@@ -24,7 +21,7 @@ type gophKeeperServer struct {
 // NewGophKeeperServer создает новый экземпляр authServiceServer.
 func NewGophKeeperServer(srv app.Server) proto.GophKeeperServer {
 	return &gophKeeperServer{
-		UnimplementedGophKeeperServer: proto.UnimplementedGophKeeperServer{}, // Инициализация
+		UnimplementedGophKeeperServer: proto.UnimplementedGophKeeperServer{},
 		server:                        srv,
 	}
 }
@@ -45,6 +42,7 @@ func (s *gophKeeperServer) Register(ctx context.Context, req *proto.RegisterRequ
 	return &proto.RegisterResponse{Message: "User registered successfully"}, nil
 }
 
+// Login обрабытвает gRPC запрос для входа пользователя.
 func (s *gophKeeperServer) Login(ctx context.Context, req *proto.LoginRequest) (*proto.LoginResponse, error) {
 	user := &models.User{
 		Username: req.Username,
@@ -58,24 +56,14 @@ func (s *gophKeeperServer) Login(ctx context.Context, req *proto.LoginRequest) (
 		return nil, status.Errorf(codes.Unauthenticated, "failed to login: %v", err)
 	}
 
-	return &proto.LoginResponse{
-		Token:   token,
-		Message: "Login successful",
-	}, nil
-}
-
-// todo пока тестовая функция ее не тестировать
-func (s *gophKeeperServer) GetUserData(ctx context.Context, req *proto.GetUserDataRequest) (*proto.GetUserDataResponse, error) {
-	// Получаем пользователя из контекста
-	user, ok := ctx.Value(models.ContextKeyUser).(string) // user это строка, т.е. имя пользователя
-	if !ok {
-		return nil, status.Errorf(codes.Unauthenticated, "invalid user data in context")
+	userID, err := s.server.GetService().GetUserIDByUsername(ctx, user.Username)
+	if err != nil {
+		return nil, status.Errorf(codes.Internal, "failed to get user ID: %v", err)
 	}
 
-	// Реализуем логику для получения данных пользователя
-	// Например, можно извлечь информацию из базы данных или использовать username для дальнейших действий
-	return &proto.GetUserDataResponse{
-		Username: user,
-		Message:  "User data fetched successfully",
+	return &proto.LoginResponse{
+		UserId:  userID,
+		Token:   token,
+		Message: "Login successful",
 	}, nil
 }

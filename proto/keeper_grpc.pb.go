@@ -8,7 +8,6 @@ package proto
 
 import (
 	context "context"
-
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -20,9 +19,12 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	GophKeeper_Register_FullMethodName    = "/keeper.GophKeeper/Register"
-	GophKeeper_Login_FullMethodName       = "/keeper.GophKeeper/Login"
-	GophKeeper_GetUserData_FullMethodName = "/keeper.GophKeeper/GetUserData"
+	GophKeeper_Register_FullMethodName   = "/keeper.GophKeeper/Register"
+	GophKeeper_Login_FullMethodName      = "/keeper.GophKeeper/Login"
+	GophKeeper_CreateData_FullMethodName = "/keeper.GophKeeper/CreateData"
+	GophKeeper_GetAllData_FullMethodName = "/keeper.GophKeeper/GetAllData"
+	GophKeeper_DeleteData_FullMethodName = "/keeper.GophKeeper/DeleteData"
+	GophKeeper_UpdateData_FullMethodName = "/keeper.GophKeeper/UpdateData"
 )
 
 // GophKeeperClient is the client API for GophKeeper service.
@@ -31,8 +33,14 @@ const (
 type GophKeeperClient interface {
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*LoginResponse, error)
-	// Новый защищённый метод для теста пока
-	GetUserData(ctx context.Context, in *GetUserDataRequest, opts ...grpc.CallOption) (*GetUserDataResponse, error)
+	// загрузка данных
+	CreateData(ctx context.Context, in *CreateDataRequest, opts ...grpc.CallOption) (*CreateDataResponse, error)
+	// Получение всех данных пользователя
+	GetAllData(ctx context.Context, in *GetAllDataRequest, opts ...grpc.CallOption) (*GetAllDataResponse, error)
+	// удаление данных пользователя
+	DeleteData(ctx context.Context, in *DeleteDataRequest, opts ...grpc.CallOption) (*DeleteDataResponse, error)
+	// обновление данных пользователя
+	UpdateData(ctx context.Context, in *UpdateDataRequest, opts ...grpc.CallOption) (*UpdateDataResponse, error)
 }
 
 type gophKeeperClient struct {
@@ -63,10 +71,40 @@ func (c *gophKeeperClient) Login(ctx context.Context, in *LoginRequest, opts ...
 	return out, nil
 }
 
-func (c *gophKeeperClient) GetUserData(ctx context.Context, in *GetUserDataRequest, opts ...grpc.CallOption) (*GetUserDataResponse, error) {
+func (c *gophKeeperClient) CreateData(ctx context.Context, in *CreateDataRequest, opts ...grpc.CallOption) (*CreateDataResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetUserDataResponse)
-	err := c.cc.Invoke(ctx, GophKeeper_GetUserData_FullMethodName, in, out, cOpts...)
+	out := new(CreateDataResponse)
+	err := c.cc.Invoke(ctx, GophKeeper_CreateData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gophKeeperClient) GetAllData(ctx context.Context, in *GetAllDataRequest, opts ...grpc.CallOption) (*GetAllDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetAllDataResponse)
+	err := c.cc.Invoke(ctx, GophKeeper_GetAllData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gophKeeperClient) DeleteData(ctx context.Context, in *DeleteDataRequest, opts ...grpc.CallOption) (*DeleteDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteDataResponse)
+	err := c.cc.Invoke(ctx, GophKeeper_DeleteData_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gophKeeperClient) UpdateData(ctx context.Context, in *UpdateDataRequest, opts ...grpc.CallOption) (*UpdateDataResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(UpdateDataResponse)
+	err := c.cc.Invoke(ctx, GophKeeper_UpdateData_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -79,8 +117,14 @@ func (c *gophKeeperClient) GetUserData(ctx context.Context, in *GetUserDataReque
 type GophKeeperServer interface {
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	Login(context.Context, *LoginRequest) (*LoginResponse, error)
-	// Новый защищённый метод для теста пока
-	GetUserData(context.Context, *GetUserDataRequest) (*GetUserDataResponse, error)
+	// загрузка данных
+	CreateData(context.Context, *CreateDataRequest) (*CreateDataResponse, error)
+	// Получение всех данных пользователя
+	GetAllData(context.Context, *GetAllDataRequest) (*GetAllDataResponse, error)
+	// удаление данных пользователя
+	DeleteData(context.Context, *DeleteDataRequest) (*DeleteDataResponse, error)
+	// обновление данных пользователя
+	UpdateData(context.Context, *UpdateDataRequest) (*UpdateDataResponse, error)
 	mustEmbedUnimplementedGophKeeperServer()
 }
 
@@ -97,8 +141,17 @@ func (UnimplementedGophKeeperServer) Register(context.Context, *RegisterRequest)
 func (UnimplementedGophKeeperServer) Login(context.Context, *LoginRequest) (*LoginResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
-func (UnimplementedGophKeeperServer) GetUserData(context.Context, *GetUserDataRequest) (*GetUserDataResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetUserData not implemented")
+func (UnimplementedGophKeeperServer) CreateData(context.Context, *CreateDataRequest) (*CreateDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateData not implemented")
+}
+func (UnimplementedGophKeeperServer) GetAllData(context.Context, *GetAllDataRequest) (*GetAllDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetAllData not implemented")
+}
+func (UnimplementedGophKeeperServer) DeleteData(context.Context, *DeleteDataRequest) (*DeleteDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteData not implemented")
+}
+func (UnimplementedGophKeeperServer) UpdateData(context.Context, *UpdateDataRequest) (*UpdateDataResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateData not implemented")
 }
 func (UnimplementedGophKeeperServer) mustEmbedUnimplementedGophKeeperServer() {}
 func (UnimplementedGophKeeperServer) testEmbeddedByValue()                    {}
@@ -157,20 +210,74 @@ func _GophKeeper_Login_Handler(srv interface{}, ctx context.Context, dec func(in
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GophKeeper_GetUserData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetUserDataRequest)
+func _GophKeeper_CreateData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateDataRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GophKeeperServer).GetUserData(ctx, in)
+		return srv.(GophKeeperServer).CreateData(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: GophKeeper_GetUserData_FullMethodName,
+		FullMethod: GophKeeper_CreateData_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GophKeeperServer).GetUserData(ctx, req.(*GetUserDataRequest))
+		return srv.(GophKeeperServer).CreateData(ctx, req.(*CreateDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GophKeeper_GetAllData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetAllDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GophKeeperServer).GetAllData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GophKeeper_GetAllData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GophKeeperServer).GetAllData(ctx, req.(*GetAllDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GophKeeper_DeleteData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GophKeeperServer).DeleteData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GophKeeper_DeleteData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GophKeeperServer).DeleteData(ctx, req.(*DeleteDataRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GophKeeper_UpdateData_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateDataRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GophKeeperServer).UpdateData(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GophKeeper_UpdateData_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GophKeeperServer).UpdateData(ctx, req.(*UpdateDataRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -191,8 +298,20 @@ var GophKeeper_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _GophKeeper_Login_Handler,
 		},
 		{
-			MethodName: "GetUserData",
-			Handler:    _GophKeeper_GetUserData_Handler,
+			MethodName: "CreateData",
+			Handler:    _GophKeeper_CreateData_Handler,
+		},
+		{
+			MethodName: "GetAllData",
+			Handler:    _GophKeeper_GetAllData_Handler,
+		},
+		{
+			MethodName: "DeleteData",
+			Handler:    _GophKeeper_DeleteData_Handler,
+		},
+		{
+			MethodName: "UpdateData",
+			Handler:    _GophKeeper_UpdateData_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

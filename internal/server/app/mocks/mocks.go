@@ -14,6 +14,7 @@ import (
 	service "github.com/Sofja96/GophKeeper.git/internal/server/service"
 	settings "github.com/Sofja96/GophKeeper.git/internal/server/settings"
 	db "github.com/Sofja96/GophKeeper.git/internal/server/storage/db"
+	minio "github.com/Sofja96/GophKeeper.git/internal/server/storage/minio"
 )
 
 // MockServer is a mock of Server interface.
@@ -79,6 +80,20 @@ func (m *MockServer) GetLogger() logging.ILogger {
 func (mr *MockServerMockRecorder) GetLogger() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLogger", reflect.TypeOf((*MockServer)(nil).GetLogger))
+}
+
+// GetMinioClient mocks base method.
+func (m *MockServer) GetMinioClient() minio.Client {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetMinioClient")
+	ret0, _ := ret[0].(minio.Client)
+	return ret0
+}
+
+// GetMinioClient indicates an expected call of GetMinioClient.
+func (mr *MockServerMockRecorder) GetMinioClient() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetMinioClient", reflect.TypeOf((*MockServer)(nil).GetMinioClient))
 }
 
 // GetService mocks base method.

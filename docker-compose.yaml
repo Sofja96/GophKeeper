@@ -7,6 +7,8 @@ services:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=keeper
+      - TZ=Europe/Moscow
+      - PGTZ=Europe/Moscow
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -22,7 +24,6 @@ services:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: minioadmin
     command: server /data --console-address ":9001"
-    #command: server /data
     ports:
       - "9000:9000"
       - "9001:9001"

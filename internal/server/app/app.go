@@ -8,48 +8,61 @@ import (
 	"github.com/Sofja96/GophKeeper.git/internal/server/service"
 	"github.com/Sofja96/GophKeeper.git/internal/server/settings"
 	"github.com/Sofja96/GophKeeper.git/internal/server/storage/db"
+	"github.com/Sofja96/GophKeeper.git/internal/server/storage/minio"
 )
 
+// Server - интерфейс, предоставляющий доступ к различным компонентам сервера,
 type Server interface {
 	GetContext() context.Context
 	GetSettings() settings.Settings
-	GetDbAdapter() db.Adapter    //добавить интерфейс ДБ
-	GetService() service.Service //добавить сервис интерфейс
+	GetDbAdapter() db.Adapter
+	GetService() service.Service
 	GetLogger() logging.ILogger
-	//GetMinio() // если будет структруры или интерфейс
+	GetMinioClient() minio.Client
 }
 
+// server - структура, которая реализует интерфейс Server.
 type server struct {
-	ctx       context.Context
-	settings  settings.Settings
-	dbAdapter db.Adapter
-	service   service.Service
-	logger    logging.ILogger
-	//todo возможно логгер или его оставить только как мидлваре
+	ctx         context.Context
+	settings    settings.Settings
+	dbAdapter   db.Adapter
+	service     service.Service
+	logger      logging.ILogger
+	minioClient minio.Client
 }
 
+// GetContext возвращает контекст для работы с сервером.
 func (s *server) GetContext() context.Context {
 	return s.ctx
 }
 
+// GetSettings возвращает настройки сервера.
 func (s *server) GetSettings() settings.Settings {
 	return s.settings
 }
 
+// GetDbAdapter возвращает адаптер для работы с базой данных.
 func (s *server) GetDbAdapter() db.Adapter {
 	return s.dbAdapter
 }
 
+// GetService возвращает экземпляр сервиса для основной логики.
 func (s *server) GetService() service.Service {
 	return s.service
 }
 
+// GetLogger возвращает логгер для записи логов.
 func (s *server) GetLogger() logging.ILogger {
 	return s.logger
 }
 
-// todo moжно переименовать в New и ниже добавить Start(в которой будет инициализироваться сам grpc)
+// GetMinioClient возвращает клиент для работы с MinIO.
+func (s *server) GetMinioClient() minio.Client {
+	return s.minioClient
+}
 
+// Run инициализирует все компоненты сервера, включая конфигурацию, базу данных,
+// логгер, клиент MinIO и сам сервис. Возвращает экземпляр сервера.
 func Run() (Server, error) {
 	ctx := context.Background()
 
@@ -65,11 +78,17 @@ func Run() (Server, error) {
 		return nil, err
 	}
 
+	minioClient, err := minio.NewMinioClient(conf)
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize MinIO client: %w", err)
+	}
+
 	return &server{
-		ctx:       ctx,
-		settings:  *conf,
-		dbAdapter: dbAdapter,
-		service:   service.New(dbAdapter),
-		logger:    logger,
+		ctx:         ctx,
+		settings:    *conf,
+		dbAdapter:   dbAdapter,
+		logger:      logger,
+		minioClient: minioClient,
+		service:     service.New(dbAdapter, minioClient, logger),
 	}, nil
 }

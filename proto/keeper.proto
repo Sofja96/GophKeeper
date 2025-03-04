@@ -4,12 +4,22 @@ package keeper;
 
 option go_package = "github.com/Sofja96/GophKeeper.git/internal/proto";
 
+import "google/protobuf/struct.proto";
+
+
 service GophKeeper {
 rpc Register (RegisterRequest) returns (RegisterResponse);
 rpc Login (LoginRequest) returns (LoginResponse);
 
-  // Новый защищённый метод для теста пока
-  rpc GetUserData (GetUserDataRequest) returns (GetUserDataResponse);
+//загрузка данных
+  rpc CreateData (CreateDataRequest) returns (CreateDataResponse);
+  // Получение всех данных пользователя
+  rpc GetAllData (GetAllDataRequest) returns (GetAllDataResponse);
+  //удаление данных пользователя
+  rpc DeleteData(DeleteDataRequest) returns (DeleteDataResponse);
+  //обновление данных пользователя
+  rpc UpdateData(UpdateDataRequest) returns (UpdateDataResponse);
+
 }
 
 message RegisterRequest {
@@ -29,13 +39,58 @@ message LoginRequest {
 message LoginResponse {
   string token = 1;
   string message = 2;
+  int64 user_id = 3;
 }
 
-message GetUserDataRequest {
-  string user_id = 1;
+enum DataType {
+  UNKNOWN = 0;
+  LOGIN_PASSWORD = 1;
+  TEXT_DATA = 2;
+  BINARY_DATA = 3;
+  BANK_CARD = 4;
 }
 
-message GetUserDataResponse {
-  string username = 1;
-  string message = 2;
+message CreateDataRequest {
+  DataType data_type = 1;
+  bytes data_content = 2;
+  google.protobuf.Struct metadata = 3;
+  string file_name = 4;
+}
+
+message CreateDataResponse {
+  string message = 1;
+  int64 data_id = 2;
+}
+
+message DataItem {
+  int64 data_id = 1;
+  DataType data_type = 2;
+  bytes data_content = 3;
+  google.protobuf.Struct metadata = 4;
+  string updated_at = 5;
+}
+
+message GetAllDataRequest {}
+
+message GetAllDataResponse {
+  repeated DataItem data = 1;
+}
+
+message DeleteDataRequest {
+  int64 data_id = 1;
+}
+
+message DeleteDataResponse {
+  string message = 1;
+}
+
+message UpdateDataRequest {
+  int64 data_id = 1;
+  bytes data_content = 2;
+  google.protobuf.Struct metadata = 3;
+  string file_name = 4;
+}
+
+message UpdateDataResponse {
+  string message = 1;
 }

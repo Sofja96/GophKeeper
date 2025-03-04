@@ -5,12 +5,11 @@ import (
 	"encoding/json"
 	"time"
 
-	logging "github.com/Sofja96/GophKeeper.git/internal/server/logger"
-
-	"google.golang.org/grpc/metadata"
-
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+
+	logging "github.com/Sofja96/GophKeeper.git/internal/server/logger"
 )
 
 // LoggingInterceptor - интерцептор для логирования запросов и ответов.
@@ -40,7 +39,9 @@ func LoggingInterceptor(log logging.ILogger) grpc.UnaryServerInterceptor {
 		if err != nil {
 			log.Info("gRPC method %s failed with code %s: %s, "+
 				"duration: %s", info.FullMethod, st.Code(), st.Message(), duration)
+			return resp, err
 		}
+
 		log.Info("gRPC method %s completed successfully, duration: %s, "+
 			"status: %s, size: %d", info.FullMethod, duration, statusCode, size)
 

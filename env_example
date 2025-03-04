@@ -1,0 +1,14 @@
+DEBUG=true
+SERVER_HOST=
+SERVER_PORT=
+DB_DSN='postgres://root:secret@localhost:5433/keeper?sslmode=disable'
+DB_AUTO_MIGRATION=true
+CERT_PATH=
+KEY_PATH=
+
+#minio
+MINIO_ENDPOINT=127.0.0.1:9000
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=minioadmin
+MINIO_BUCKET_NAME=
+

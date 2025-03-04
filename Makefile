@@ -1,6 +1,8 @@
 TEST_PATH=./...
 
-VERSION := v1.0.0
+BUILD_SCRIPT := ./build.sh
+
+VERSION := $$(git describe --tags --abbrev=0)
 DATE := $$(date)
 
 MOCK_SERVER_SRC=./internal/server/app/app.go
@@ -18,14 +20,17 @@ MOCK_GRPC_DST=./proto/mocks/mocks.go
 MOCK_LOGGER_SRC=./internal/server/logger/logger.go
 MOCK_LOGGER_DST=./internal/server/logger/mocks/mocks.go
 
-.PHONY=mock-gen
+MOCK_MINIO_SRC=./internal/server/storage/minio/minio.go
+MOCK_MINIO_DST=./internal/server/storage/minio/mocks/mocks.go
 
+.PHONY=mock-gen
 mock-gen:
 	$(GOPATH)/bin/mockgen -source=$(MOCK_STORAGE_SRC) -destination=$(MOCK_STORAGE_DST)
 	$(GOPATH)/bin/mockgen -source=$(MOCK_GRPC_SRC) -destination=$(MOCK_GRPC_DST)
 	$(GOPATH)/bin/mockgen -source=$(MOCK_LOGGER_SRC) -destination=$(MOCK_LOGGER_DST)
 	$(GOPATH)/bin/mockgen -source=$(MOCK_SERVER_SRC) -destination=$(MOCK_SERVER_DST)
 	$(GOPATH)/bin/mockgen -source=$(MOCK_SERVICE_SRC) -destination=$(MOCK_SERVICE_DST)
+	$(GOPATH)/bin/mockgen -source=$(MOCK_MINIO_SRC) -destination=$(MOCK_MINIO_DST)
 
 
 .PHONY=lint
@@ -48,10 +53,19 @@ build:
 	go build -o client -ldflags="-X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.Version=${VERSION}' -X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.BuildDate=${DATE}'" cmd/client/main.go
 	go build -o server -ldflags="-X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.Version=${VERSION}' -X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.BuildDate=${DATE}'" cmd/server/main.go
 
+.PHONY=build-client
+build-client:
+	chmod +x $(BUILD_SCRIPT)
+	$(BUILD_SCRIPT)
 
 .PHONY: test
 test:
 	go test -v $(TEST_PATH)
+
+.PHONY: coverage
+coverage:
+	go tool cover -html cover.out -o cover.html
+	open cover.html
 
 .PHONY: test-without-pb
 test-without-pb:
@@ -64,10 +78,6 @@ test-with-coverage:
 	go test -coverprofile=cover.out -v $(TEST_PATH)
 	make --silent coverage
 
-.PHONY: coverage
-coverage:
-	go tool cover -html cover.out -o cover.html
-	open cover.html
 
 .PHONY: total-coverage
 total-coverage:

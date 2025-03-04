@@ -75,7 +75,8 @@ func TestRegister(t *testing.T) {
 			},
 			mockBehavior: func(m *mocks, args args) {
 				m.app.EXPECT().GetService().Return(m.service)
-				m.service.EXPECT().RegisterUser(gomock.Any(), args.user).Return(nil, utils.ErrUserExists)
+				m.service.EXPECT().RegisterUser(gomock.Any(), args.user).
+					Return(nil, utils.ErrUserExists)
 			},
 			expectedError:   status.Errorf(codes.AlreadyExists, "user testuser already exists"),
 			expectedMessage: "",
@@ -94,7 +95,8 @@ func TestRegister(t *testing.T) {
 			},
 			mockBehavior: func(m *mocks, args args) {
 				m.app.EXPECT().GetService().Return(m.service)
-				m.service.EXPECT().RegisterUser(gomock.Any(), args.user).Return(nil, errors.New("failed to hash password"))
+				m.service.EXPECT().RegisterUser(gomock.Any(), args.user).
+					Return(nil, errors.New("failed to hash password"))
 			},
 			expectedError:   status.Errorf(codes.Internal, "failed to register user: failed to hash password"),
 			expectedMessage: "",
@@ -160,7 +162,9 @@ func TestLogin(t *testing.T) {
 				},
 			},
 			mockBehavior: func(m *mocks, args args) {
-				m.app.EXPECT().GetService().Return(m.service)
+				m.app.EXPECT().GetService().Return(m.service).Times(2)
+				m.service.EXPECT().GetUserIDByUsername(gomock.Any(), "testuser").
+					Return(int64(1), nil)
 				m.service.EXPECT().LoginUser(gomock.Any(), args.user).Return("Bearer mock_token",
 					nil)
 			},
@@ -262,13 +266,10 @@ func TestNewGophKeeperServer(t *testing.T) {
 
 	server := NewGophKeeperServer(mockApp)
 
-	// Проверяем, что созданный сервер не nil
 	assert.NotNil(t, server)
 
-	// Проверяем, что server имеет ожидаемый тип
 	gkServer, ok := server.(*gophKeeperServer)
 	assert.True(t, ok, "Expected type *gophKeeperServer")
 
-	// Проверяем, что переданный mockApp был сохранен в поле server
 	assert.Equal(t, mockApp, gkServer.server)
 }

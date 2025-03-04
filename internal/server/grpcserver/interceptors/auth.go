@@ -15,16 +15,24 @@ import (
 	"github.com/Sofja96/GophKeeper.git/internal/models"
 )
 
-// todo покрыть тестами
+// Claims представляет собой структуру для хранения информации о пользователе в JWT.
 type Claims struct {
 	jwt.RegisteredClaims
 	User string
 }
 
-const JwtSecret = "JWT_SECRET"
+const (
+	// JwtSecret используется для подписи токенов JWT.
+	JwtSecret = "JWT_SECRET"
 
-const TokenExp = time.Second * 24
+	// TokenExp указывает время истечения токена (24 часа).
+	TokenExp = time.Hour * 24
 
+	// BearerSchema - схема авторизации, ожидаемая в заголовке Authorization.
+	BearerSchema = "Bearer "
+)
+
+// CreateToken создает новый JWT токен для пользователя с указанным именем.
 func CreateToken(user string) (string, error) {
 	claims := Claims{
 		jwt.RegisteredClaims{
@@ -41,6 +49,7 @@ func CreateToken(user string) (string, error) {
 	return tokenString, nil
 }
 
+// VerifyToken проверяет и расшифровывает JWT токен.
 func VerifyToken(tokenString string) (string, error) {
 	claims := &Claims{}
 	token, err := jwt.ParseWithClaims(tokenString, claims,
@@ -61,8 +70,6 @@ func VerifyToken(tokenString string) (string, error) {
 	fmt.Println("Token is valid")
 	return claims.User, nil
 }
-
-const BearerSchema = "Bearer "
 
 // AuthInterceptor перехватывает gRPC-запросы и проверяет токен
 func AuthInterceptor() grpc.UnaryServerInterceptor {
@@ -99,10 +106,7 @@ func AuthInterceptor() grpc.UnaryServerInterceptor {
 			return nil, status.Errorf(codes.Unauthenticated, "You must be logged in to access this resource")
 		}
 
-		// Добавляем пользователя в контекст
 		ctx = context.WithValue(ctx, models.ContextKeyUser, user)
-
-		// Вызываем следующий обработчик
 		return handler(ctx, req)
 	}
 }

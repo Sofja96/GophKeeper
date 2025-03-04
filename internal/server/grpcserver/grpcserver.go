@@ -3,26 +3,24 @@ package grpcserver
 import (
 	"context"
 	"fmt"
-	"log"
 	"net"
 	"time"
 
-	"google.golang.org/grpc/credentials"
-
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/reflection"
 
 	"github.com/Sofja96/GophKeeper.git/internal/server/app"
 	"github.com/Sofja96/GophKeeper.git/internal/server/grpcserver/interceptors"
+	logging "github.com/Sofja96/GophKeeper.git/internal/server/logger"
 	"github.com/Sofja96/GophKeeper.git/proto"
 )
-
-//todo покрыть тестами
 
 // GRPCServer управляет gRPC сервером.
 type GRPCServer struct {
 	server   *grpc.Server
 	listener net.Listener
+	logger   logging.ILogger
 }
 
 // NewGRPCServer создает новый экземпляр GRPCServer.
@@ -41,19 +39,17 @@ func NewGRPCServer(srv app.Server) (*GRPCServer, error) {
 		grpc.Creds(cred),
 		grpc.ChainUnaryInterceptor(
 			interceptors.LoggingInterceptor(srv.GetLogger()),
-			interceptors.AuthInterceptor(), // Интерсептор авторизации
-
+			interceptors.AuthInterceptor(),
 		),
 	)
 
-	// Регистрация AuthService
-	//authServer := &gophKeeperServer{server: srv}
 	proto.RegisterGophKeeperServer(grpcServer, NewGophKeeperServer(srv))
 	reflection.Register(grpcServer)
 
 	return &GRPCServer{
 		server:   grpcServer,
 		listener: lis,
+		logger:   srv.GetLogger(),
 	}, nil
 }
 
@@ -63,38 +59,35 @@ func Run(ctx context.Context, srv app.Server) error {
 	if err != nil {
 		return fmt.Errorf("failed to create gRPC server: %w", err)
 	}
-	// Канал для ошибок
 	errorCh := make(chan error, 1)
 
-	// Запуск gRPC сервера
 	go func() {
-		log.Printf("gRPC server listening at %v", grpcSrv.listener.Addr())
+		srv.GetLogger().Info("gRPC server listening at %v", grpcSrv.listener.Addr())
 		if err := grpcSrv.server.Serve(grpcSrv.listener); err != nil {
 			errorCh <- fmt.Errorf("gRPC server failed: %w", err)
 		}
 	}()
 
 	defer func() {
-		log.Println("Initiating graceful shutdown...")
+		srv.GetLogger().Info("Initiating graceful shutdown...")
 		serverCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 
 		grpcSrv.Stop(serverCtx)
-		log.Println("Gracefully stopped")
-
+		srv.GetLogger().Info("Gracefully stopped")
 	}()
 
 	select {
 	case err := <-errorCh:
-		log.Printf("Error starting server: %v\n", err)
+		srv.GetLogger().Info("Error starting server: %v\n", err)
 		return err
 	case <-ctx.Done():
-		log.Println("Shutdown signal received, shutting down gracefully...")
+		srv.GetLogger().Info("Shutdown signal received, shutting down gracefully...")
 		return ctx.Err()
 	}
 }
 
-// Stop stops gRPC server gracefully with a context.
+// Stop зарквает соединение gRPC сервера gracefully.
 func (s *GRPCServer) Stop(ctx context.Context) {
 	stopped := make(chan struct{})
 	go func() {
@@ -104,9 +97,9 @@ func (s *GRPCServer) Stop(ctx context.Context) {
 
 	select {
 	case <-ctx.Done():
-		s.server.Stop() // Принудительная остановка, если таймаут истек
-		log.Println("gRPC server was forcefully stopped")
+		s.server.Stop()
+		s.logger.Info("gRPC server was forcefully stopped")
 	case <-stopped:
-		log.Println("gRPC server stopped gracefully")
+		s.logger.Info("gRPC server stopped gracefully")
 	}
 }

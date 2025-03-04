@@ -37,24 +37,64 @@ func (m *MockGophKeeperClient) EXPECT() *MockGophKeeperClientMockRecorder {
 	return m.recorder
 }
 
-// GetUserData mocks base method.
-func (m *MockGophKeeperClient) GetUserData(ctx context.Context, in *proto.GetUserDataRequest, opts ...grpc.CallOption) (*proto.GetUserDataResponse, error) {
+// CreateData mocks base method.
+func (m *MockGophKeeperClient) CreateData(ctx context.Context, in *proto.CreateDataRequest, opts ...grpc.CallOption) (*proto.CreateDataResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{ctx, in}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
-	ret := m.ctrl.Call(m, "GetUserData", varargs...)
-	ret0, _ := ret[0].(*proto.GetUserDataResponse)
+	ret := m.ctrl.Call(m, "CreateData", varargs...)
+	ret0, _ := ret[0].(*proto.CreateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserData indicates an expected call of GetUserData.
-func (mr *MockGophKeeperClientMockRecorder) GetUserData(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+// CreateData indicates an expected call of CreateData.
+func (mr *MockGophKeeperClientMockRecorder) CreateData(ctx, in interface{}, opts ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{ctx, in}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserData", reflect.TypeOf((*MockGophKeeperClient)(nil).GetUserData), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateData", reflect.TypeOf((*MockGophKeeperClient)(nil).CreateData), varargs...)
+}
+
+// DeleteData mocks base method.
+func (m *MockGophKeeperClient) DeleteData(ctx context.Context, in *proto.DeleteDataRequest, opts ...grpc.CallOption) (*proto.DeleteDataResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "DeleteData", varargs...)
+	ret0, _ := ret[0].(*proto.DeleteDataResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteData indicates an expected call of DeleteData.
+func (mr *MockGophKeeperClientMockRecorder) DeleteData(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteData", reflect.TypeOf((*MockGophKeeperClient)(nil).DeleteData), varargs...)
+}
+
+// GetAllData mocks base method.
+func (m *MockGophKeeperClient) GetAllData(ctx context.Context, in *proto.GetAllDataRequest, opts ...grpc.CallOption) (*proto.GetAllDataResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetAllData", varargs...)
+	ret0, _ := ret[0].(*proto.GetAllDataResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllData indicates an expected call of GetAllData.
+func (mr *MockGophKeeperClientMockRecorder) GetAllData(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllData", reflect.TypeOf((*MockGophKeeperClient)(nil).GetAllData), varargs...)
 }
 
 // Login mocks base method.
@@ -97,6 +137,26 @@ func (mr *MockGophKeeperClientMockRecorder) Register(ctx, in interface{}, opts .
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockGophKeeperClient)(nil).Register), varargs...)
 }
 
+// UpdateData mocks base method.
+func (m *MockGophKeeperClient) UpdateData(ctx context.Context, in *proto.UpdateDataRequest, opts ...grpc.CallOption) (*proto.UpdateDataResponse, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{ctx, in}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateData", varargs...)
+	ret0, _ := ret[0].(*proto.UpdateDataResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateData indicates an expected call of UpdateData.
+func (mr *MockGophKeeperClientMockRecorder) UpdateData(ctx, in interface{}, opts ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{ctx, in}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockGophKeeperClient)(nil).UpdateData), varargs...)
+}
+
 // MockGophKeeperServer is a mock of GophKeeperServer interface.
 type MockGophKeeperServer struct {
 	ctrl     *gomock.Controller
@@ -120,19 +180,49 @@ func (m *MockGophKeeperServer) EXPECT() *MockGophKeeperServerMockRecorder {
 	return m.recorder
 }
 
-// GetUserData mocks base method.
-func (m *MockGophKeeperServer) GetUserData(arg0 context.Context, arg1 *proto.GetUserDataRequest) (*proto.GetUserDataResponse, error) {
+// CreateData mocks base method.
+func (m *MockGophKeeperServer) CreateData(arg0 context.Context, arg1 *proto.CreateDataRequest) (*proto.CreateDataResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserData", arg0, arg1)
-	ret0, _ := ret[0].(*proto.GetUserDataResponse)
+	ret := m.ctrl.Call(m, "CreateData", arg0, arg1)
+	ret0, _ := ret[0].(*proto.CreateDataResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserData indicates an expected call of GetUserData.
-func (mr *MockGophKeeperServerMockRecorder) GetUserData(arg0, arg1 interface{}) *gomock.Call {
+// CreateData indicates an expected call of CreateData.
+func (mr *MockGophKeeperServerMockRecorder) CreateData(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserData", reflect.TypeOf((*MockGophKeeperServer)(nil).GetUserData), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateData", reflect.TypeOf((*MockGophKeeperServer)(nil).CreateData), arg0, arg1)
+}
+
+// DeleteData mocks base method.
+func (m *MockGophKeeperServer) DeleteData(arg0 context.Context, arg1 *proto.DeleteDataRequest) (*proto.DeleteDataResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteData", arg0, arg1)
+	ret0, _ := ret[0].(*proto.DeleteDataResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteData indicates an expected call of DeleteData.
+func (mr *MockGophKeeperServerMockRecorder) DeleteData(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteData", reflect.TypeOf((*MockGophKeeperServer)(nil).DeleteData), arg0, arg1)
+}
+
+// GetAllData mocks base method.
+func (m *MockGophKeeperServer) GetAllData(arg0 context.Context, arg1 *proto.GetAllDataRequest) (*proto.GetAllDataResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllData", arg0, arg1)
+	ret0, _ := ret[0].(*proto.GetAllDataResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllData indicates an expected call of GetAllData.
+func (mr *MockGophKeeperServerMockRecorder) GetAllData(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllData", reflect.TypeOf((*MockGophKeeperServer)(nil).GetAllData), arg0, arg1)
 }
 
 // Login mocks base method.
@@ -163,6 +253,21 @@ func (m *MockGophKeeperServer) Register(arg0 context.Context, arg1 *proto.Regist
 func (mr *MockGophKeeperServerMockRecorder) Register(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockGophKeeperServer)(nil).Register), arg0, arg1)
+}
+
+// UpdateData mocks base method.
+func (m *MockGophKeeperServer) UpdateData(arg0 context.Context, arg1 *proto.UpdateDataRequest) (*proto.UpdateDataResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateData", arg0, arg1)
+	ret0, _ := ret[0].(*proto.UpdateDataResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateData indicates an expected call of UpdateData.
+func (mr *MockGophKeeperServerMockRecorder) UpdateData(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockGophKeeperServer)(nil).UpdateData), arg0, arg1)
 }
 
 // mustEmbedUnimplementedGophKeeperServer mocks base method.

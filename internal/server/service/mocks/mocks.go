@@ -36,6 +36,66 @@ func (m *MockService) EXPECT() *MockServiceMockRecorder {
 	return m.recorder
 }
 
+// CreateData mocks base method.
+func (m *MockService) CreateData(ctx context.Context, data *models.Data) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateData", ctx, data)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// CreateData indicates an expected call of CreateData.
+func (mr *MockServiceMockRecorder) CreateData(ctx, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateData", reflect.TypeOf((*MockService)(nil).CreateData), ctx, data)
+}
+
+// DeleteData mocks base method.
+func (m *MockService) DeleteData(ctx context.Context, dataId, userId int64) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteData", ctx, dataId, userId)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteData indicates an expected call of DeleteData.
+func (mr *MockServiceMockRecorder) DeleteData(ctx, dataId, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteData", reflect.TypeOf((*MockService)(nil).DeleteData), ctx, dataId, userId)
+}
+
+// GetData mocks base method.
+func (m *MockService) GetData(ctx context.Context, userId int64) ([]models.Data, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetData", ctx, userId)
+	ret0, _ := ret[0].([]models.Data)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetData indicates an expected call of GetData.
+func (mr *MockServiceMockRecorder) GetData(ctx, userId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetData", reflect.TypeOf((*MockService)(nil).GetData), ctx, userId)
+}
+
+// GetUserIDByUsername mocks base method.
+func (m *MockService) GetUserIDByUsername(ctx context.Context, username string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserIDByUsername", ctx, username)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserIDByUsername indicates an expected call of GetUserIDByUsername.
+func (mr *MockServiceMockRecorder) GetUserIDByUsername(ctx, username interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserIDByUsername", reflect.TypeOf((*MockService)(nil).GetUserIDByUsername), ctx, username)
+}
+
 // LoginUser mocks base method.
 func (m *MockService) LoginUser(ctx context.Context, user *models.User) (string, error) {
 	m.ctrl.T.Helper()
@@ -64,4 +124,18 @@ func (m *MockService) RegisterUser(ctx context.Context, user *models.User) (*mod
 func (mr *MockServiceMockRecorder) RegisterUser(ctx, user interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUser", reflect.TypeOf((*MockService)(nil).RegisterUser), ctx, user)
+}
+
+// UpdateData mocks base method.
+func (m *MockService) UpdateData(ctx context.Context, data *models.Data) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateData", ctx, data)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateData indicates an expected call of UpdateData.
+func (mr *MockServiceMockRecorder) UpdateData(ctx, data interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateData", reflect.TypeOf((*MockService)(nil).UpdateData), ctx, data)
 }

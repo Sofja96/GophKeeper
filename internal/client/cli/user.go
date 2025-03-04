@@ -2,13 +2,12 @@ package cli
 
 import (
 	"bufio"
-	"fmt"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 
+	"github.com/Sofja96/GophKeeper.git/internal/client/encryption"
 	"github.com/Sofja96/GophKeeper.git/internal/client/grpcclient"
 )
 
@@ -18,25 +17,33 @@ func LoginCmd(client *grpcclient.Client) *cobra.Command {
 		Use:   "login",
 		Short: "Authenticate and receive a token",
 		Run: func(cmd *cobra.Command, args []string) {
-			//username := "testuser"
-			//password := "password123"
 
 			reader := bufio.NewReader(os.Stdin)
 
-			fmt.Print("Enter username: ")
+			cmd.Print("Enter username: ")
 			username, _ := reader.ReadString('\n')
 			username = strings.TrimSpace(username)
 
-			fmt.Print("Enter password: ")
+			cmd.Print("Enter password: ")
 			password, _ := reader.ReadString('\n')
 			password = strings.TrimSpace(password)
 
 			token, err := client.Login(username, password)
 			if err != nil {
-				log.Fatalf("Login failed: %v", err)
+				client.Logger.Error("Login failed: %v", err)
 			}
 
-			fmt.Println("Token:", token)
+			salt := []byte(username)
+			encryptionKey := encryption.GenerateEncryptionKey(password, salt)
+
+			client.SetMasterKey(encryptionKey)
+			client.SetToken(token)
+
+			if err := client.SyncData(); err != nil {
+				cmd.Println("Ошибка синхронизации данных:", err)
+				return
+			}
+
 		},
 	}
 }
@@ -48,25 +55,22 @@ func RegisterCmd(client *grpcclient.Client) *cobra.Command {
 		Short: "Register a new user",
 		Run: func(cmd *cobra.Command, args []string) {
 
-			//username := "testuser2"
-			//password := "password123"
-
 			reader := bufio.NewReader(os.Stdin)
 
-			fmt.Print("Enter username: ")
+			cmd.Print("Enter username: ")
 			username, _ := reader.ReadString('\n')
 			username = strings.TrimSpace(username)
 
-			fmt.Print("Enter password: ")
+			cmd.Print("Enter password: ")
 			password, _ := reader.ReadString('\n')
 			password = strings.TrimSpace(password)
 
 			err := client.Register(username, password)
 			if err != nil {
-				log.Fatalf("Registration failed: %v", err)
+				client.Logger.Error("Registration failed: %v", err)
 			}
 
-			fmt.Println("Registration successful!")
+			cmd.Println("Registration successful!")
 		},
 	}
 }

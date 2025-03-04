@@ -17,23 +17,33 @@ import (
 	"github.com/Sofja96/GophKeeper.git/internal/server/settings"
 )
 
-//todo покрыть тестами
-
 type dbAdapter struct {
 	conn *sqlx.DB
 }
 
+// Close закрывает подключение к базе данных.
 func (db *dbAdapter) Close() {
 	_ = db.conn.Close()
 }
 
+// Adapter предоставляет абстракцию для работы с базой данных, включая операции с пользователями и данными.
 type Adapter interface {
 	Close()
 	CreateUser(ctx context.Context, user *models.User) (*models.User, error)
 	GetUserIDByName(ctx context.Context, username string) (bool, error)
 	GetUserHashPassword(ctx context.Context, username string) (string, error)
+	CreateData(ctx context.Context, data *models.Data) (int64, error)
+	GetUserID(ctx context.Context, username string) (int64, error)
+	GetData(ctx context.Context, userId int64) ([]models.Data, error)
+	DeleteData(ctx context.Context, dataId int64, userId int64) (bool, error)
+	GetDataByID(ctx context.Context, dataID int64) (*models.Data, error)
+	UpdateData(ctx context.Context, data *models.Data) error
 }
 
+// NewAdapter создает и инициализирует новый адаптер для работы с базой данных.
+//
+// Эта функция выполняет подключение к базе данных с использованием строки подключения,
+// а также выполняет миграции, если указано в настройках.
 func NewAdapter(settings *settings.Settings) (Adapter, error) {
 	db, err := sqlx.Connect("postgres", settings.DbDsn)
 	if err != nil {
