@@ -5,7 +5,6 @@
 package mock_app
 
 import (
-	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -38,20 +37,6 @@ func NewMockServer(ctrl *gomock.Controller) *MockServer {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockServer) EXPECT() *MockServerMockRecorder {
 	return m.recorder
-}
-
-// GetContext mocks base method.
-func (m *MockServer) GetContext() context.Context {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetContext")
-	ret0, _ := ret[0].(context.Context)
-	return ret0
-}
-
-// GetContext indicates an expected call of GetContext.
-func (mr *MockServerMockRecorder) GetContext() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetContext", reflect.TypeOf((*MockServer)(nil).GetContext))
 }
 
 // GetDbAdapter mocks base method.

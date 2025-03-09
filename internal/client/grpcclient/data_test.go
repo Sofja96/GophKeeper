@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -21,7 +22,7 @@ import (
 
 func TestCreateData(t *testing.T) {
 	t.Cleanup(func() {
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 	})
 
 	ctrl := gomock.NewController(t)
@@ -212,7 +213,9 @@ func TestCreateData(t *testing.T) {
 		assert.Contains(t, err.Error(), "ошибка конвертации типа данных")
 	})
 	t.Run("Ошибка сохранения данных в локальное хранилище", func(t *testing.T) {
-		err := os.Chmod("local_storage.json", 0444)
+		userDir := filepath.Join("user_data", fmt.Sprintf("%d", grpcClient.UserID))
+		dataFilePath := filepath.Join(userDir, "data.json")
+		err := os.Chmod(dataFilePath, 0444)
 		if err != nil {
 			t.Fatalf("Не удалось установить права на файл: %v", err)
 		}
@@ -238,7 +241,7 @@ func TestCreateData(t *testing.T) {
 
 func TestUpdateData(t *testing.T) {
 	t.Cleanup(func() {
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 	})
 
 	ctrl := gomock.NewController(t)
@@ -423,11 +426,12 @@ func TestUpdateData(t *testing.T) {
 		assert.Contains(t, err.Error(), "неверный тип данных для бинарного контента")
 	})
 	t.Run("Ошибка сохранения данных в локальное хранилище", func(t *testing.T) {
-		err := os.Chmod("local_storage.json", 0444)
+		userDir := filepath.Join("user_data", fmt.Sprintf("%d", grpcClient.UserID))
+		dataFilePath := filepath.Join(userDir, "data.json")
+		err := os.Chmod(dataFilePath, 0444)
 		if err != nil {
 			t.Fatalf("Не удалось установить права на файл: %v", err)
 		}
-
 		testData := &models.TextDataType{
 			Text: "Sample text data",
 		}
@@ -445,17 +449,12 @@ func TestUpdateData(t *testing.T) {
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "ошибка обновления данных в локальном хранилище")
-
-		err = os.Chmod("local_storage.json", 0644)
-		if err != nil {
-			t.Fatalf("Не удалось восстановить права на файл: %v", err)
-		}
 	})
 }
 
 func TestDeleteData(t *testing.T) {
 	t.Cleanup(func() {
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 	})
 
 	ctrl := gomock.NewController(t)
@@ -511,7 +510,9 @@ func TestDeleteData(t *testing.T) {
 		dataId := int64(1)
 		createTestData(dataId)
 
-		err := os.Chmod("local_storage.json", 0444)
+		userDir := filepath.Join("user_data", fmt.Sprintf("%d", grpcClient.UserID))
+		dataFilePath := filepath.Join(userDir, "data.json")
+		err := os.Chmod(dataFilePath, 0444)
 		if err != nil {
 			t.Fatalf("Не удалось установить права на файл: %v", err)
 		}
@@ -520,7 +521,7 @@ func TestDeleteData(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "ошибка удаления данных из локального хранилища")
 
-		err = os.Chmod("local_storage.json", 0644)
+		err = os.Chmod(dataFilePath, 0644)
 		if err != nil {
 			t.Fatalf("Не удалось восстановить права на файл: %v", err)
 		}
@@ -540,7 +541,7 @@ func TestDeleteData(t *testing.T) {
 
 func TestGetData(t *testing.T) {
 	t.Cleanup(func() {
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 	})
 
 	masterKey := make([]byte, 32)
@@ -683,14 +684,21 @@ func TestGetData(t *testing.T) {
 		assert.Contains(t, err.Error(), "ошибка расшифровки данных")
 	})
 	t.Run("Получение данных из пустого хранилища", func(t *testing.T) {
-		err := os.Remove("local_storage.json")
+		err := os.RemoveAll("user_data")
 		assert.NoError(t, err)
 		data, err := grpcClient.GetData()
 		assert.NoError(t, err)
 		assert.Empty(t, data)
 	})
 	t.Run("Ошибка получения данных из локального хранилища", func(t *testing.T) {
-		err := os.WriteFile("local_storage.json", []byte(""), 0644)
+		userDir := filepath.Join("user_data", fmt.Sprintf("%d", grpcClient.UserID))
+		err := os.MkdirAll(userDir, 0700)
+		if err != nil {
+			t.Fatalf("Не удалось создать директорию пользователя: %v", err)
+		}
+
+		dataFilePath := filepath.Join(userDir, "data.json")
+		err = os.WriteFile(dataFilePath, []byte(""), 0644)
 		assert.NoError(t, err)
 		_, err = grpcClient.GetData()
 
@@ -732,10 +740,10 @@ func TestSyncData_Success(t *testing.T) {
 
 	t.Run("Успешная синхронизация данных", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 
 		dataId := int64(1)
 		updatedAt := time.Now()
@@ -762,10 +770,10 @@ func TestSyncData_Success(t *testing.T) {
 
 	t.Run("Обновление локальных данных, если серверные данные новее", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 
 		dataId := int64(1)
 		localUpdatedAt := time.Now().Add(-1 * time.Hour) // Локальные данные старше
@@ -796,10 +804,10 @@ func TestSyncData_Success(t *testing.T) {
 
 	t.Run("Синхронизация данных с сервера в локальное хранилище", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 
 		dataId := int64(1)
 		updatedAt := time.Now()
@@ -828,10 +836,10 @@ func TestSyncData_Success(t *testing.T) {
 
 	t.Run("Обновление локального ID после отправки данных на сервер", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 
 		localID := int64(1)
 		newID := int64(2) // Новый ID, который вернет сервер
@@ -893,7 +901,7 @@ func TestSyncData_Failure(t *testing.T) {
 
 	t.Run("Ошибка получения данных с сервера", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
 		mockClient.EXPECT().GetAllData(gomock.Any(), &proto.GetAllDataRequest{}).
@@ -905,13 +913,17 @@ func TestSyncData_Failure(t *testing.T) {
 	})
 	t.Run("Ошибка получения данных из локального хранилища", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
-		err := os.WriteFile("local_storage.json", []byte(""), 0444)
+		userDir := filepath.Join("user_data", fmt.Sprintf("%d", grpcClient.UserID))
+		err := os.MkdirAll(userDir, 0700)
 		if err != nil {
-			t.Fatalf("Не удалось установить права на файл: %v", err)
+			t.Fatalf("Не удалось создать директорию пользователя: %v", err)
 		}
+
+		dataFilePath := filepath.Join(userDir, "data.json")
+		err = os.WriteFile(dataFilePath, []byte(""), 0644)
 
 		mockClient.EXPECT().GetAllData(gomock.Any(), &proto.GetAllDataRequest{}).
 			Return(&proto.GetAllDataResponse{
@@ -922,14 +934,14 @@ func TestSyncData_Failure(t *testing.T) {
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "ошибка получения данных из локального хранилища")
 
-		err = os.Chmod("local_storage.json", 0644)
+		err = os.Chmod(dataFilePath, 0644)
 		if err != nil {
 			t.Fatalf("Не удалось восстановить права на файл: %v", err)
 		}
 	})
 	t.Run("Ошибка отправки данных на сервер", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
 		dataId := int64(1)
@@ -951,10 +963,10 @@ func TestSyncData_Failure(t *testing.T) {
 	})
 	t.Run("Ошибка обновления данных на сервере", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 
 		dataId := int64(1)
 		updatedAt := time.Now()
@@ -983,11 +995,10 @@ func TestSyncData_Failure(t *testing.T) {
 	})
 	t.Run("Ошибка сохранения данных в локальное хранилище", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
-			os.Chmod("local_storage.json", 0644)
+			os.RemoveAll("user_data")
 		})
 
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 
 		dataId := int64(1)
 		updatedAt := time.Now()
@@ -1005,7 +1016,14 @@ func TestSyncData_Failure(t *testing.T) {
 				},
 			}, nil)
 
-		err := os.WriteFile("local_storage.json", []byte("{}"), 0444)
+		userDir := filepath.Join("user_data", fmt.Sprintf("%d", grpcClient.UserID))
+		err := os.MkdirAll(userDir, 0700)
+		if err != nil {
+			t.Fatalf("Не удалось создать директорию пользователя: %v", err)
+		}
+
+		dataFilePath := filepath.Join(userDir, "data.json")
+		err = os.WriteFile(dataFilePath, []byte("{}"), 0444)
 		if err != nil {
 			t.Fatalf("Не удалось установить права на файл: %v", err)
 		}
@@ -1016,10 +1034,10 @@ func TestSyncData_Failure(t *testing.T) {
 	})
 	t.Run("Ошибка обновления локальных данных", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 
 		dataId := int64(1)
 		localUpdatedAt := time.Now().Add(-1 * time.Hour) // Локальные данные старше
@@ -1039,26 +1057,22 @@ func TestSyncData_Failure(t *testing.T) {
 			},
 		}, nil)
 
-		err := os.Chmod("local_storage.json", 0444)
-		if err != nil {
-			t.Fatalf("Не удалось установить права на файл: %v", err)
-		}
-
-		err = grpcClient.SyncData()
-		assert.Error(t, err)
-		assert.Contains(t, err.Error(), "ошибка обновления локальных данных")
-
-		err = os.Chmod("local_storage.json", 0644)
+		userDir := filepath.Join("user_data", fmt.Sprintf("%d", grpcClient.UserID))
+		dataFilePath := filepath.Join(userDir, "data.json")
+		err := os.Chmod(dataFilePath, 0444)
 		if err != nil {
 			t.Fatalf("Не удалось восстановить права на файл: %v", err)
 		}
+		err = grpcClient.SyncData()
+		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "ошибка обновления локальных данных")
 	})
 	t.Run("Ошибка обновления локального ID", func(t *testing.T) {
 		t.Cleanup(func() {
-			os.Remove("local_storage.json")
+			os.RemoveAll("user_data")
 		})
 
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 
 		localID := int64(1)
 		newID := int64(2) // Новый ID, который вернет сервер
@@ -1076,19 +1090,16 @@ func TestSyncData_Failure(t *testing.T) {
 				DataId: newID,
 			}, nil)
 
-		err := os.Chmod("local_storage.json", 0444)
+		userDir := filepath.Join("user_data", fmt.Sprintf("%d", grpcClient.UserID))
+		dataFilePath := filepath.Join(userDir, "data.json")
+		err := os.Chmod(dataFilePath, 0444)
 		if err != nil {
-			t.Fatalf("Не удалось установить права на файл: %v", err)
+			t.Fatalf("Не удалось восстановить права на файл: %v", err)
 		}
 
 		err = grpcClient.SyncData()
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "ошибка обновления локального ID")
-
-		err = os.Chmod("local_storage.json", 0644)
-		if err != nil {
-			t.Fatalf("Не удалось восстановить права на файл: %v", err)
-		}
 	})
 }
 

@@ -13,7 +13,7 @@ func GetDataCmd(client *grpcclient.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "get-data",
 		Short: "Получить все данные пользователя",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			fmt.Println("\nРежим получения данных. Введите '8' или 'exit' для выхода.")
 
 			data, err := client.GetData()

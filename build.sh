@@ -13,7 +13,7 @@ PLATFORMS=(
 
 OUTPUT_NAME="gophkeeper-client"
 BUILD_DIR="build"
-LDFLAGS="-X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.Version=$VERSION' -X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.BuildDate=$DATE'"
+LDFLAGS="-X 'github.com/Sofja96/GophKeeper.git/pkg/buildinfo.Version=$VERSION' -X 'github.com/Sofja96/GophKeeper.git/pkg/buildinfo.BuildDate=$DATE'"
 
 mkdir -p "$BUILD_DIR"
 

@@ -15,9 +15,9 @@ import (
 	amock "github.com/Sofja96/GophKeeper.git/internal/server/app/mocks"
 	mlogging "github.com/Sofja96/GophKeeper.git/internal/server/logger/mocks"
 	"github.com/Sofja96/GophKeeper.git/internal/server/settings"
+	"github.com/Sofja96/GophKeeper.git/pkg"
 	"github.com/Sofja96/GophKeeper.git/proto"
 	mproto "github.com/Sofja96/GophKeeper.git/proto/mocks"
-	"github.com/Sofja96/GophKeeper.git/shared"
 )
 
 func TestGophKeeperServer_Login(t *testing.T) {
@@ -310,7 +310,7 @@ func TestNewGRPCServer_Success(t *testing.T) {
 	defer os.Remove(certPath)
 	defer os.Remove(keyPath)
 
-	err := shared.GenerateCertificate(certPath, keyPath)
+	err := pkg.GenerateCertificate(certPath, keyPath)
 	assert.NoError(t, err)
 
 	m.app.EXPECT().GetSettings().Return(settings.Settings{
@@ -355,7 +355,7 @@ func TestRun_Success(t *testing.T) {
 	defer os.Remove(certPath)
 	defer os.Remove(keyPath)
 
-	err := shared.GenerateCertificate(certPath, keyPath)
+	err := pkg.GenerateCertificate(certPath, keyPath)
 	assert.NoError(t, err)
 
 	mockApp.EXPECT().GetSettings().Return(settings.Settings{

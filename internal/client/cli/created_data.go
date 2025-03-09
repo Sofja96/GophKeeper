@@ -20,7 +20,7 @@ func CreateDataCmd(client *grpcclient.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "create-data",
 		Short: "Создать новые данные",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			reader := bufio.NewReader(os.Stdin)
 
 			cmd.Println("\nРежим создания данных. Введите '8' или 'exit' для выхода.")

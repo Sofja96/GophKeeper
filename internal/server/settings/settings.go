@@ -69,12 +69,12 @@ func GetSettings() (*Settings, error) {
 		return nil, err
 	}
 
-	settings, err := newSettings()
+	settings := newSettings()
 
-	return settings, err
+	return settings, nil
 }
 
-func newSettings() (*Settings, error) {
+func newSettings() *Settings {
 	return &Settings{
 		Debug:           viper.GetBool(envKeyDebug),
 		Host:            viper.GetString(envKeyServerHost),
@@ -88,7 +88,7 @@ func newSettings() (*Settings, error) {
 		MinioEndpoint:   viper.GetString(envKeyMinioEndpoint),
 		MinioUseSsl:     viper.GetBool(envKeyMinioUseSsl),
 		MinioBucketName: viper.GetString(envMinioBucketName),
-	}, nil
+	}
 }
 
 func setEnv(key string, defaultValue interface{}) func() error {

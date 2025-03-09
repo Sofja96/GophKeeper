@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"fmt"
 
 	logging "github.com/Sofja96/GophKeeper.git/internal/server/logger"
@@ -13,7 +12,6 @@ import (
 
 // Server - интерфейс, предоставляющий доступ к различным компонентам сервера,
 type Server interface {
-	GetContext() context.Context
 	GetSettings() settings.Settings
 	GetDbAdapter() db.Adapter
 	GetService() service.Service
@@ -23,17 +21,11 @@ type Server interface {
 
 // server - структура, которая реализует интерфейс Server.
 type server struct {
-	ctx         context.Context
 	settings    settings.Settings
 	dbAdapter   db.Adapter
 	service     service.Service
 	logger      logging.ILogger
 	minioClient minio.Client
-}
-
-// GetContext возвращает контекст для работы с сервером.
-func (s *server) GetContext() context.Context {
-	return s.ctx
 }
 
 // GetSettings возвращает настройки сервера.
@@ -64,8 +56,6 @@ func (s *server) GetMinioClient() minio.Client {
 // Run инициализирует все компоненты сервера, включая конфигурацию, базу данных,
 // логгер, клиент MinIO и сам сервис. Возвращает экземпляр сервера.
 func Run() (Server, error) {
-	ctx := context.Background()
-
 	conf, err := settings.GetSettings()
 	if err != nil {
 		return nil, fmt.Errorf("error load configuration: %w", err)
@@ -84,7 +74,6 @@ func Run() (Server, error) {
 	}
 
 	return &server{
-		ctx:         ctx,
 		settings:    *conf,
 		dbAdapter:   dbAdapter,
 		logger:      logger,

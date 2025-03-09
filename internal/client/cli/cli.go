@@ -9,7 +9,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/Sofja96/GophKeeper.git/internal/client/grpcclient"
-	"github.com/Sofja96/GophKeeper.git/shared/buildinfo"
+	"github.com/Sofja96/GophKeeper.git/pkg/buildinfo"
 )
 
 // StartCLI инициализирует CLI, принимая gRPC-клиент
@@ -17,7 +17,7 @@ func StartCLI(client *grpcclient.Client) error {
 	rootCmd := &cobra.Command{
 		Use:   "gophkeeper",
 		Short: "CLI client for GophKeeper",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			err := InteractiveMode(client)
 			if err != nil {
 				return err
@@ -61,13 +61,22 @@ func InteractiveMode(client *grpcclient.Client) error {
 		case "2":
 			RegisterCmd(client).Run(dummyCmd, nil)
 		case "3":
-			CreateDataCmd(client).RunE(dummyCmd, nil)
+			err := CreateDataCmd(client).RunE(dummyCmd, nil)
+			if err != nil {
+				fmt.Printf("Ошибка при создании данных: %v\n", err)
+			}
 		case "4":
 			GetDataCmd(client).Run(dummyCmd, nil)
 		case "5":
-			DeleteDataCmd(client).RunE(dummyCmd, nil)
+			err := DeleteDataCmd(client).RunE(dummyCmd, nil)
+			if err != nil {
+				fmt.Printf("Ошибка при удалении данных: %v\n", err)
+			}
 		case "6":
-			UpdateDataCmd(client).RunE(dummyCmd, nil)
+			err := UpdateDataCmd(client).RunE(dummyCmd, nil)
+			if err != nil {
+				fmt.Printf("Ошибка при обновлении данных: %v\n", err)
+			}
 		case "7":
 			VersionCmd().Run(dummyCmd, nil)
 		case "8":
@@ -84,7 +93,7 @@ func VersionCmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "version",
 		Short: "Show build version",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 			cmd.Printf("Version: %s\nBuild Date: %s\n", buildinfo.Version, buildinfo.BuildDate)
 		},
 	}

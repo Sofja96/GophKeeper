@@ -73,8 +73,9 @@ func (s *gophKeeperServer) GetAllData(ctx context.Context, _ *proto.GetAllDataRe
 		return nil, status.Errorf(codes.Internal, "failed to get data: %v", err)
 	}
 
-	var responseData []*proto.DataItem
-	for _, item := range data {
+	responseData := make([]*proto.DataItem, 0, len(data))
+	for i := range data {
+		item := &data[i]
 
 		protoDataType, err := models.ConvertModelDataTypeToProto(item.DataType)
 		if err != nil {

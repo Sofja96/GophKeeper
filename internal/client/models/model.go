@@ -9,8 +9,8 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 
 	"github.com/Sofja96/GophKeeper.git/internal/client/encryption"
+	"github.com/Sofja96/GophKeeper.git/pkg"
 	"github.com/Sofja96/GophKeeper.git/proto"
-	"github.com/Sofja96/GophKeeper.git/shared"
 )
 
 // DataType интерфейс для всех моделей данных
@@ -72,7 +72,7 @@ type BankCardType struct {
 
 // IsValid проверяет карту по алгоритму Луна
 func (bc *BankCardType) IsValid() bool {
-	return shared.ValidateLuhn(bc.CardNumber)
+	return pkg.ValidateLuhn(bc.CardNumber)
 }
 
 // Validate проверяет, что карта корректная

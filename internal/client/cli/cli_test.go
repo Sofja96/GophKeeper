@@ -2,10 +2,10 @@ package cli
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -179,6 +179,10 @@ func TestCreateDataCmd(t *testing.T) {
 	}
 	tmpFile.Close()
 
+	userID := int64(2)
+	userDir := filepath.Join("user_data", fmt.Sprintf("%d", userID))
+	defer os.RemoveAll(userDir)
+
 	testCases := []struct {
 		name           string
 		input          string
@@ -265,7 +269,6 @@ func TestCreateDataCmd(t *testing.T) {
 			defer ctrl.Finish()
 
 			mockClient := mproto.NewMockGophKeeperClient(ctrl)
-
 			if !tc.expectedError {
 				mockClient.EXPECT().
 					CreateData(gomock.Any(), gomock.Any()).
@@ -333,21 +336,8 @@ func TestUpdateDataCmd(t *testing.T) {
 	}
 	tmpFile.Close()
 
-	_, err = os.Create("local_storage.json")
-	if err != nil {
-		t.Fatalf("Не удалось создать временный файл: %v", err)
-	}
-
-	initialData := localstorage.Storage{
-		Data: make(map[int64]map[int64]models.Data),
-	}
-	fileData, err := json.MarshalIndent(initialData, "", "  ")
-	if err != nil {
-		t.Fatalf("Не удалось сериализовать начальные данные: %v", err)
-	}
-	if err := os.WriteFile("local_storage.json", fileData, 0644); err != nil {
-		t.Fatalf("Не удалось записать начальные данные в файл: %v", err)
-	}
+	userID := int64(1)
+	filepath.Join("user_data", fmt.Sprintf("%d", userID))
 
 	masterKey := make([]byte, 32)
 	copy(masterKey, "16-byte-master-key")
@@ -365,7 +355,7 @@ func TestUpdateDataCmd(t *testing.T) {
 		UpdatedAt:   time.Date(2025, 3, 2, 15, 22, 0, 0, time.FixedZone("MSK", 3*60*60)),
 	}
 
-	err = localstorage.SaveData(0, testDatas)
+	err = localstorage.SaveData(userID, testDatas)
 	if err != nil {
 		t.Fatalf("Не удалось сохранить тестовые данные: %v", err)
 	}
@@ -434,6 +424,7 @@ func TestUpdateDataCmd(t *testing.T) {
 			client := &grpcclient.Client{
 				Client:        mockClient,
 				EncryptionKey: masterKey,
+				UserID:        int64(1),
 			}
 
 			oldStdin := os.Stdin
@@ -486,7 +477,7 @@ func TestDeleteDataCmd(t *testing.T) {
 		},
 		{
 			name:           "Ошибка удаления данных",
-			input:          "123\n",
+			input:          "1\n",
 			expectedOutput: "Ошибка удаления данных:",
 			expectedError:  true,
 			mockBehavior: func(mockClient *mproto.MockGophKeeperClient) {
@@ -526,7 +517,7 @@ func TestDeleteDataCmd(t *testing.T) {
 			expectedOutput: "У вас нет данных для удаления",
 			expectedError:  true,
 			mockBehavior: func(mockClient *mproto.MockGophKeeperClient) {
-				os.Remove("local_storage.json")
+				os.RemoveAll("user_data")
 			},
 		},
 	}
@@ -545,6 +536,7 @@ func TestDeleteDataCmd(t *testing.T) {
 			client := &grpcclient.Client{
 				Client:        mockClient,
 				EncryptionKey: masterKey,
+				UserID:        int64(0),
 			}
 
 			oldStdin := os.Stdin
@@ -577,12 +569,20 @@ func TestDeleteDataCmd(t *testing.T) {
 
 func TestDeleteDataCmd_ErrorGettingData(t *testing.T) {
 	t.Cleanup(func() {
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 	})
 
-	_, err := os.Create("local_storage.json")
+	userID := int64(1)
+	userDir := filepath.Join("user_data", fmt.Sprintf("%d", userID))
+	err := os.MkdirAll(userDir, 0700)
 	if err != nil {
-		t.Fatalf("Не удалось создать временный файл: %v", err)
+		t.Fatalf("Не удалось создать директорию пользователя: %v", err)
+	}
+
+	dataFilePath := filepath.Join(userDir, "data.json")
+	err = os.WriteFile(dataFilePath, []byte(""), 0644)
+	if err != nil {
+		t.Fatalf("Не удалось создать пустой файл data.json: %v", err)
 	}
 
 	ctrl := gomock.NewController(t)
@@ -602,6 +602,7 @@ func TestDeleteDataCmd_ErrorGettingData(t *testing.T) {
 	client := &grpcclient.Client{
 		Client:        mockClient,
 		EncryptionKey: masterKey,
+		UserID:        userID,
 	}
 
 	oldStdin := os.Stdin
@@ -622,7 +623,8 @@ func TestDeleteDataCmd_ErrorGettingData(t *testing.T) {
 	err = cmd.Execute()
 
 	assert.Error(t, err)
-	assert.Contains(t, buf.String(), "Ошибка получения данных: ошибка получения данных из локального хранилища: ошибка чтения данных: ошибка десериализации данных: unexpected end of JSON input")
+	output := buf.String()
+	assert.Contains(t, output, "Ошибка получения данных: ошибка получения данных из локального хранилища: ошибка чтения данных пользователя: ошибка десериализации данных: unexpected end of JSON input")
 }
 
 func TestGetDataCmd_Integration(t *testing.T) {
@@ -631,23 +633,14 @@ func TestGetDataCmd_Integration(t *testing.T) {
 
 	mockClient := mproto.NewMockGophKeeperClient(ctrl)
 	t.Cleanup(func() {
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 	})
 
-	_, err := os.Create("local_storage.json")
+	userID := int64(1)
+	userDir := filepath.Join("user_data", fmt.Sprintf("%d", userID))
+	err := os.MkdirAll(userDir, 0700)
 	if err != nil {
-		t.Fatalf("Не удалось создать временный файл: %v", err)
-	}
-
-	initialData := localstorage.Storage{
-		Data: make(map[int64]map[int64]models.Data),
-	}
-	fileData, err := json.MarshalIndent(initialData, "", "  ")
-	if err != nil {
-		t.Fatalf("Не удалось сериализовать начальные данные: %v", err)
-	}
-	if err := os.WriteFile("local_storage.json", fileData, 0644); err != nil {
-		t.Fatalf("Не удалось записать начальные данные в файл: %v", err)
+		t.Fatalf("Не удалось создать директорию пользователя: %v", err)
 	}
 
 	masterKey := make([]byte, 32)
@@ -666,7 +659,7 @@ func TestGetDataCmd_Integration(t *testing.T) {
 		UpdatedAt:   time.Date(2025, 3, 2, 15, 22, 0, 0, time.FixedZone("MSK", 3*60*60)),
 	}
 
-	err = localstorage.SaveData(0, testData)
+	err = localstorage.SaveData(userID, testData)
 	if err != nil {
 		t.Fatalf("Не удалось сохранить тестовые данные: %v", err)
 	}
@@ -674,6 +667,7 @@ func TestGetDataCmd_Integration(t *testing.T) {
 	client := &grpcclient.Client{
 		Client:        mockClient,
 		EncryptionKey: masterKey,
+		UserID:        int64(1),
 	}
 
 	cmd := GetDataCmd(client)
@@ -697,23 +691,14 @@ func TestGetDataCmd_Integration_Error(t *testing.T) {
 
 	mockClient := mproto.NewMockGophKeeperClient(ctrl)
 	t.Cleanup(func() {
-		os.Remove("local_storage.json")
+		os.RemoveAll("user_data")
 	})
 
-	_, err := os.Create("local_storage.json")
+	userID := int64(1)
+	userDir := filepath.Join("user_data", fmt.Sprintf("%d", userID))
+	err := os.MkdirAll(userDir, 0700)
 	if err != nil {
-		t.Fatalf("Не удалось создать временный файл: %v", err)
-	}
-
-	initialData := localstorage.Storage{
-		Data: make(map[int64]map[int64]models.Data),
-	}
-	fileData, err := json.MarshalIndent(initialData, "", "  ")
-	if err != nil {
-		t.Fatalf("Не удалось сериализовать начальные данные: %v", err)
-	}
-	if err := os.WriteFile("local_storage.json", fileData, 0644); err != nil {
-		t.Fatalf("Не удалось записать начальные данные в файл: %v", err)
+		t.Fatalf("Не удалось создать директорию пользователя: %v", err)
 	}
 
 	masterKey := make([]byte, 32)
@@ -722,12 +707,12 @@ func TestGetDataCmd_Integration_Error(t *testing.T) {
 	testData := models.Data{
 		ID:          1,
 		DataType:    "LOGIN_PASSWORD",
-		DataContent: []byte(`{"username":"unutest","password":"test"}`),
+		DataContent: []byte(`{"username":"unutest","password":"test"}`), // Не зашифрованные данные
 		Metadata:    nil,
 		UpdatedAt:   time.Date(2025, 3, 2, 15, 22, 0, 0, time.FixedZone("MSK", 3*60*60)),
 	}
 
-	err = localstorage.SaveData(0, testData)
+	err = localstorage.SaveData(userID, testData)
 	if err != nil {
 		t.Fatalf("Не удалось сохранить тестовые данные: %v", err)
 	}
@@ -735,6 +720,7 @@ func TestGetDataCmd_Integration_Error(t *testing.T) {
 	client := &grpcclient.Client{
 		Client:        mockClient,
 		EncryptionKey: masterKey,
+		UserID:        int64(1),
 	}
 
 	cmd := GetDataCmd(client)

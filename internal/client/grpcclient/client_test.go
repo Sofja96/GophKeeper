@@ -9,9 +9,9 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"github.com/Sofja96/GophKeeper.git/internal/server/settings"
+	"github.com/Sofja96/GophKeeper.git/pkg"
 	"github.com/Sofja96/GophKeeper.git/proto"
 	mproto "github.com/Sofja96/GophKeeper.git/proto/mocks"
-	"github.com/Sofja96/GophKeeper.git/shared"
 )
 
 func TestNewGRPCClient_Success(t *testing.T) {
@@ -21,7 +21,7 @@ func TestNewGRPCClient_Success(t *testing.T) {
 	defer os.Remove(certPath)
 	defer os.Remove(keyPath)
 
-	err := shared.GenerateCertificate(certPath, keyPath)
+	err := pkg.GenerateCertificate(certPath, keyPath)
 	assert.NoError(t, err)
 
 	conf := &settings.Settings{

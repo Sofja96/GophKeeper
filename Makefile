@@ -23,7 +23,7 @@ MOCK_LOGGER_DST=./internal/server/logger/mocks/mocks.go
 MOCK_MINIO_SRC=./internal/server/storage/minio/minio.go
 MOCK_MINIO_DST=./internal/server/storage/minio/mocks/mocks.go
 
-.PHONY=mock-gen
+.PHONY:mock-gen
 mock-gen:
 	$(GOPATH)/bin/mockgen -source=$(MOCK_STORAGE_SRC) -destination=$(MOCK_STORAGE_DST)
 	$(GOPATH)/bin/mockgen -source=$(MOCK_GRPC_SRC) -destination=$(MOCK_GRPC_DST)
@@ -33,27 +33,27 @@ mock-gen:
 	$(GOPATH)/bin/mockgen -source=$(MOCK_MINIO_SRC) -destination=$(MOCK_MINIO_DST)
 
 
-.PHONY=lint
+.PHONY:lint
 lint:
 	$(GOPATH)/bin/golangci-lint run
 
-.PHONY=docker-run
+.PHONY:docker-run
 docker-run:
 	docker compose up --build --abort-on-container-exit
 
 GO_IMPORTS = $(GOPATH)/bin/goimports
 GO_FILES = $(shell find . -name '*.go')
 
-.PHONY=make-import
+.PHONY:make-import
 make-import:
 	$(GO_IMPORTS) -local github.com/Sofja96/GophKeeper.git -w $(GO_FILES)
 
-.PHONY=build
+.PHONY:build
 build:
-	go build -o client -ldflags="-X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.Version=${VERSION}' -X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.BuildDate=${DATE}'" cmd/client/main.go
-	go build -o server -ldflags="-X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.Version=${VERSION}' -X 'github.com/Sofja96/GophKeeper.git/shared/buildinfo.BuildDate=${DATE}'" cmd/server/main.go
+	go build -o client -ldflags="-X 'github.com/Sofja96/GophKeeper.git/pkg/buildinfo.Version=${VERSION}' -X 'github.com/Sofja96/GophKeeper.git/pkg/buildinfo.BuildDate=${DATE}'" cmd/client/main.go
+	go build -o server -ldflags="-X 'github.com/Sofja96/GophKeeper.git/pkg/buildinfo.Version=${VERSION}' -X 'github.com/Sofja96/GophKeeper.git/pkg/buildinfo.BuildDate=${DATE}'" cmd/server/main.go
 
-.PHONY=build-client
+.PHONY:build-client
 build-client:
 	chmod +x $(BUILD_SCRIPT)
 	$(BUILD_SCRIPT)

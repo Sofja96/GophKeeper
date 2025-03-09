@@ -16,7 +16,7 @@ func LoginCmd(client *grpcclient.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "login",
 		Short: "Authenticate and receive a token",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 
 			reader := bufio.NewReader(os.Stdin)
 
@@ -53,7 +53,7 @@ func RegisterCmd(client *grpcclient.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "register",
 		Short: "Register a new user",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(cmd *cobra.Command, _ []string) {
 
 			reader := bufio.NewReader(os.Stdin)
 

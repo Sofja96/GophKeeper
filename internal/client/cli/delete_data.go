@@ -14,7 +14,7 @@ func DeleteDataCmd(client *grpcclient.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "delete-data",
 		Short: "Удалить данные по ID",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			cmd.Println("\nРежим удаления данных. Введите '8' или 'exit' для выхода.")
 
 			data, err := client.GetData()

@@ -19,7 +19,7 @@ func UpdateDataCmd(client *grpcclient.Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "delete-data",
 		Short: "Обновить данные",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: func(cmd *cobra.Command, _ []string) error {
 			fmt.Println("\nРежим обновления данных. Введите '8' или 'exit' для выхода.")
 
 			reader := bufio.NewReader(os.Stdin)
