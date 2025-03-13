@@ -38,9 +38,9 @@ func (s *service) GetData(ctx context.Context, userId int64) ([]models.Data, err
 		return nil, utils.ErrUserDataNotFound
 	}
 
-	for i, item := range data {
-		if item.DataType == models.BinaryData {
-			fileURLValue, ok := item.GetMetadata("file_url")
+	for i := range data {
+		if data[i].DataType == models.BinaryData {
+			fileURLValue, ok := data[i].GetMetadata("file_url")
 			if !ok {
 				s.logger.Error("file_url not found in metadata for binary data")
 				continue

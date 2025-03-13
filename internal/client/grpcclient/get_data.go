@@ -19,7 +19,7 @@ func (c *Client) GetData() ([]models.Data, error) {
 	}
 
 	key := c.GetMasterKey()
-	var data []models.Data
+	data := make([]models.Data, 0, len(dataMap))
 
 	for _, item := range dataMap {
 		var decryptedData []byte
