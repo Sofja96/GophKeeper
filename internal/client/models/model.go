@@ -58,8 +58,12 @@ func (b *BinaryDataType) Validate() error {
 }
 
 // ToJSON кодирует бинарные данные в base64 и возвращает их в формате JSON.
-func (b *BinaryDataType) ToJSON() []byte {
-	return []byte(encryption.EncodeData(b.Content))
+func (b *BinaryDataType) ToJSON() ([]byte, error) {
+	encodedData := encryption.EncodeData(b.Content)
+	if encodedData == "" {
+		return nil, errors.New("ошибка кодирования данных: пустой результат")
+	}
+	return []byte(encodedData), nil
 }
 
 // BankCardType - структура банковской карты
