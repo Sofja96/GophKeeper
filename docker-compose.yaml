@@ -1,0 +1,41 @@
+services:
+  # Сервис для PostgreSQL
+  postgres:
+    image: postgres:latest
+    container_name: gophkeeper_postgres
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=keeper
+      - TZ=Europe/Moscow
+      - PGTZ=Europe/Moscow
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    networks:
+      - gophkeeper_network
+
+  # Сервис для MinIO
+  minio:
+    image: minio/minio:latest
+    container_name: gophkeeper_minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+    networks:
+      - gophkeeper_network
+
+networks:
+  gophkeeper_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  minio_data:
